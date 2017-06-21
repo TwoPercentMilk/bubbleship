@@ -78,15 +78,16 @@ char* BuildField()
 	char* field;
 	int index;
 
-	field = (char*)malloc(21);
+	field = (char*)malloc(401);
 
 	index = 0;
 
-	while(index <= 19)
+	while(index <= 399)
 	{
 		*(field + index) = 'o';
 		index = index + 1;
 	}
+
 	*(field + index) = 0;
 
 
@@ -95,17 +96,29 @@ char* BuildField()
 }
 
 
-int PromptPlayerForCoords(int playerNumber, int* xpos)
+int PromptPlayerForCoords(int playerNumber, int* coordPos)
 {
 	
 	char* xCoord;
+	char* yCoord;
+	int xpos;
+	int ypos;
+	int maxX = 20;
 
 	printf("Player %d, enter x coord ", playerNumber);
 	xCoord = (char*)malloc(3);
 	gets_s(xCoord, 3);
-	*xpos = atoi(xCoord);
+	xpos = atoi(xCoord);
 
-	if(*xpos <= 19)
+	printf("Player %d, enter y coord ", playerNumber);
+	yCoord = (char*)malloc(3);
+	gets_s(yCoord, 3);
+	ypos = atoi(yCoord);
+
+	*coordPos = ((maxX * ypos) - (maxX - xpos));
+
+
+	if(*coordPos <= 19)
 	{
 		return 0;
 	}
@@ -119,30 +132,41 @@ int PromptPlayerForCoords(int playerNumber, int* xpos)
 
 void PlaceShips(int numShips, int playerNumber, char* field)
 {
-	int xpos;
+	int pos;
 	int shipNumber = 1;
 	
 
 	while (shipNumber <= numShips)
 	{
-		printf("Ship %d location. ", shipNumber);
-		PromptPlayerForCoords(playerNumber, &xpos);
-		field[xpos] = 's';
+		printf("**Ship %d location.**\n", shipNumber);
+		PromptPlayerForCoords(playerNumber, &pos);
+		field[pos] = 's';
 		shipNumber = shipNumber + 1;
 	}
 
 	return;
 }
 
-int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int xpos)
+int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos)
 {
 	int sunkShip = 0;
 	int ret;
-	char allShipsSunkField[21] = "oooooooooooooooooooo";
+	int indexOfField = 0;
+	char* allShipsSunkField;
+	
+	allShipsSunkField = (char*)malloc(401);
 
-	if (fieldOfDefender[xpos] == 's')
+	while (indexOfField <= 399)
 	{
-		fieldOfDefender[xpos] = 'o';
+		*(allShipsSunkField + indexOfField) = 'o';
+		indexOfField = indexOfField + 1;
+	}
+
+	*(allShipsSunkField + indexOfField) = 0;
+
+	if (fieldOfDefender[coordPos] == 's')
+	{
+		fieldOfDefender[coordPos] = 'o';
 		printf("Player %d sunk Player %d's ship! \n", playerNumberOfAttacker, playerNumberOfDefender);
 		sunkShip = sunkShip + 1;
 	}

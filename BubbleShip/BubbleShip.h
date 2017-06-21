@@ -23,7 +23,7 @@ xpos: Address where PromptPlayerForCoords should put the x coordinate retrieved 
 returns 0 on success
 returns -1 on error
 */
-int PromptPlayerForCoords(int playerNumber, int* xpos);
+int PromptPlayerForCoords(int playerNumber, int* coordPos);
 
 /*PlaceShips
 Prompts the user for where to place some number of ships.
@@ -64,6 +64,6 @@ returns 9999 if all ships are sunk
 returns the number of ships sunk
 returns -1 on error
 */
-int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int xpos);
+int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos);
 
 
