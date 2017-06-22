@@ -10,6 +10,11 @@
 
 int main()
 {
+	char* xAxis;
+	char* yAxis;
+	int xAxisInt;
+	int yAxisInt;
+	int fieldSize;
 	char* playerOneField;
 	char* playerTwoField;
 	int playerOneNumber = 1;
@@ -19,7 +24,6 @@ int main()
 	char* numShipsStr;
 
 	int coord = 0;
-
 	
 	printf("How many ships do you want? (choose number between 1-19)");
 	numShipsStr = (char*)malloc(4);
@@ -31,11 +35,24 @@ int main()
 		return -1;
 	}
 
-	playerOneField = BuildField();
-	playerTwoField = BuildField();
+	printf("Choose the size of your x axis. ");
+	xAxis = (char*)malloc(MAX_PATH);
+	gets_s(xAxis, MAX_PATH);
+	xAxisInt = atoi(xAxis);
 
-	PlaceShips(numberOfShips, playerOneNumber, playerOneField);
-	PlaceShips(numberOfShips, playerTwoNumber, playerTwoField);
+	printf("Choose the size of your y axis. ");
+	yAxis = (char*)malloc(MAX_PATH);
+	gets_s(yAxis, MAX_PATH);
+	yAxisInt = atoi(yAxis);
+
+	fieldSize = (xAxisInt * yAxisInt);
+
+
+	playerOneField = BuildField(fieldSize);
+	playerTwoField = BuildField(fieldSize);
+
+	PlaceShips(numberOfShips, playerOneNumber, playerOneField, xAxisInt, fieldSize);
+	PlaceShips(numberOfShips, playerTwoNumber, playerTwoField, xAxisInt, fieldSize);
 
 
 
@@ -43,8 +60,8 @@ int main()
 	{
 
 		//Player One's turn
-		PromptPlayerForCoords(playerOneNumber, &coord);
-		attackResults = LaunchAttackAgainstPlayer(playerOneNumber, playerTwoNumber, playerTwoField, coord);
+		PromptPlayerForCoords(playerOneNumber, &coord, xAxisInt, fieldSize);
+		attackResults = LaunchAttackAgainstPlayer(playerOneNumber, playerTwoNumber, playerTwoField, coord, fieldSize);
 
 		printf("Player One sunk %d ships! \n", attackResults);
 		if (attackResults == 9999)
@@ -55,8 +72,8 @@ int main()
 
 
 		//Player Two's turn
-		PromptPlayerForCoords(playerTwoNumber, &coord);
-		attackResults = LaunchAttackAgainstPlayer(playerTwoNumber, playerOneNumber, playerOneField, coord);
+		PromptPlayerForCoords(playerTwoNumber, &coord, xAxisInt, fieldSize);
+		attackResults = LaunchAttackAgainstPlayer(playerTwoNumber, playerOneNumber, playerOneField, coord, fieldSize);
 
 		printf("Player Two sunk %d ships! \n", attackResults);
 		if (attackResults == 9999)
@@ -73,16 +90,17 @@ int main()
 
 }
 
-char* BuildField()
+char* BuildField(int fieldSize)
 {
+	
 	char* field;
 	int index;
 
-	field = (char*)malloc(401);
+	field = (char*)malloc(fieldSize);
 
 	index = 0;
 
-	while(index <= 399)
+	while(index < fieldSize)
 	{
 		*(field + index) = 'o';
 		index = index + 1;
@@ -90,20 +108,18 @@ char* BuildField()
 
 	*(field + index) = 0;
 
-
 	return field;
 
 }
 
 
-int PromptPlayerForCoords(int playerNumber, int* coordPos)
+int PromptPlayerForCoords(int playerNumber, int* coordPos, int maxX, int fieldSize)
 {
 	
 	char* xCoord;
 	char* yCoord;
 	int xpos;
 	int ypos;
-	int maxX = 20;
 
 	printf("Player %d, enter x coord ", playerNumber);
 	xCoord = (char*)malloc(3);
@@ -118,7 +134,7 @@ int PromptPlayerForCoords(int playerNumber, int* coordPos)
 	*coordPos = ((maxX * ypos) - (maxX - xpos));
 
 
-	if(*coordPos <= 19)
+	if(*coordPos <= fieldSize)
 	{
 		return 0;
 	}
@@ -130,7 +146,7 @@ int PromptPlayerForCoords(int playerNumber, int* coordPos)
 
 }
 
-void PlaceShips(int numShips, int playerNumber, char* field)
+void PlaceShips(int numShips, int playerNumber, char* field, int maxX, int fieldSize)
 {
 	int pos;
 	int shipNumber = 1;
@@ -139,7 +155,7 @@ void PlaceShips(int numShips, int playerNumber, char* field)
 	while (shipNumber <= numShips)
 	{
 		printf("**Ship %d location.**\n", shipNumber);
-		PromptPlayerForCoords(playerNumber, &pos);
+		PromptPlayerForCoords(playerNumber, &pos, maxX, fieldSize);
 		field[pos] = 's';
 		shipNumber = shipNumber + 1;
 	}
@@ -147,16 +163,16 @@ void PlaceShips(int numShips, int playerNumber, char* field)
 	return;
 }
 
-int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos)
+int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos, int fieldSize)
 {
 	int sunkShip = 0;
 	int ret;
 	int indexOfField = 0;
 	char* allShipsSunkField;
 	
-	allShipsSunkField = (char*)malloc(401);
+	allShipsSunkField = (char*)malloc(fieldSize + 1);
 
-	while (indexOfField <= 399)
+	while (indexOfField < fieldSize)
 	{
 		*(allShipsSunkField + indexOfField) = 'o';
 		indexOfField = indexOfField + 1;

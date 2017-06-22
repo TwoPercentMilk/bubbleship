@@ -3,27 +3,31 @@
 
 
 /*BuildField
-Builds a field that is 20 spaces big. The field is an array of characters and should
+Builds a field. Player has control to choose size of field. The field is an array of characters and should
 in the beginning every character should be an o. Do not use a null-terminator. This will
 need to dynamically allocate space for a character array and return the pointer.
 
-returns a pointer to an array of 20 characters
+returns a pointer to an array of n characters
 */
-char* BuildField();
+char* BuildField(int fieldSize);
 
 
 /*PromptPlayerForCoords
 Prompts user for x coord
 Example:
-Player 1, enter coords>
+Player 1, enter x coord>
+
+Prompts user for y coord
+Example:
+Player 1, enter x coord>
 
 playerNumber: The id number of the player
-xpos: Address where PromptPlayerForCoords should put the x coordinate retrieved from the user
+coordPos: Address where PromptPlayerForCoords should put the coordinate retrieved from the user
 
 returns 0 on success
 returns -1 on error
 */
-int PromptPlayerForCoords(int playerNumber, int* coordPos);
+int PromptPlayerForCoords(int playerNumber, int* coordPos, int maxX, int fieldSize);
 
 /*PlaceShips
 Prompts the user for where to place some number of ships.
@@ -47,7 +51,7 @@ field: A pointer to the character array which represents the field.
 
 returns nothing
 */
-void PlaceShips(int numShips, int playerNumber, char* field);
+void PlaceShips(int numShips, int playerNumber, char* field, int maxX, int fieldSize);
 
 
 
@@ -64,6 +68,6 @@ returns 9999 if all ships are sunk
 returns the number of ships sunk
 returns -1 on error
 */
-int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos);
+int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos, int fieldSize);
 
 
