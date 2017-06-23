@@ -10,7 +10,7 @@
 
 int main()
 {
-	while(-1 == LoopMain());
+	while(-1 == LoopMain()); //Restarts the game when player enters coordinates that are too big
 }
 
 
@@ -32,6 +32,7 @@ int LoopMain()
 
 	int coord = 0;
 
+	//Player chooses how many ships
 	printf("How many ships do you want? (choose number between 1-19)");
 	numShipsStr = (char*)malloc(4);
 	gets_s(numShipsStr, 4);
@@ -42,6 +43,7 @@ int LoopMain()
 		return -1;
 	}
 
+	//Player chooses the sizes of the x and y axes
 	printf("Choose the size of your x axis. ");
 	xAxis = (char*)malloc(MAX_PATH);
 	gets_s(xAxis, MAX_PATH);
@@ -52,12 +54,13 @@ int LoopMain()
 	gets_s(yAxis, MAX_PATH);
 	yAxisInt = atoi(yAxis);
 
-	fieldSize = (xAxisInt * yAxisInt);
+	fieldSize = (xAxisInt * yAxisInt); //Size of the field
 
-
+	//Builds the correct size of the field for each player, with all empty spaces (i.e., all 'o')
 	playerOneField = BuildField(fieldSize);
 	playerTwoField = BuildField(fieldSize);
 
+	//Places ships on each player's fields
 	PlaceShips(numberOfShips, playerOneNumber, playerOneField, xAxisInt, yAxisInt, fieldSize);
 	PlaceShips(numberOfShips, playerTwoNumber, playerTwoField, xAxisInt, yAxisInt, fieldSize);
 
@@ -107,22 +110,17 @@ int LoopMain()
 
 	}
 
-
-
-
 	return -1; //Should never get here;
 
 }
 
 char* BuildField(int fieldSize)
 {
-	
 	char* field;
 	int index;
+	index = 0;
 
 	field = (char*)malloc(fieldSize);
-
-	index = 0;
 
 	while(index < fieldSize)
 	{
@@ -130,7 +128,7 @@ char* BuildField(int fieldSize)
 		index = index + 1;
 	}
 
-	*(field + index) = 0;
+	*(field + index) = 0; //Sets null terminator
 
 	return field;
 
@@ -145,28 +143,30 @@ int PromptPlayerForCoords(int playerNumber, int* coordPos, int maxX, int maxY, i
 	int xpos;
 	int ypos;
 
+	//Prompts player for x coordinates
 	printf("Player %d, enter x coord ", playerNumber);
 	xCoord = (char*)malloc(3);
 	gets_s(xCoord, 3);
 	xpos = atoi(xCoord);
 	
-	if (xpos > maxX)
+	if (xpos > maxX) //If player enters x coord that is too large
 	{
 		printf("That x coordinate is too big! ");
 		return -1;
 	}
 
+	//Prompts player for y coordinates
 	printf("Player %d, enter y coord ", playerNumber);
 	yCoord = (char*)malloc(3);
 	gets_s(yCoord, 3);
 	ypos = atoi(yCoord);
 
-	if (ypos > maxY)
+	if (ypos > maxY) //If player enters y coord that is too large
 	{
 		printf("That y coordinate is too big! ");
 	}
 
-	*coordPos = ((maxX * ypos) - (maxX - xpos));
+	*coordPos = ((maxX * ypos) - (maxX - xpos)); //Determines specific value for each coordinate pair
 
 
 	if(*coordPos <= fieldSize)
@@ -188,15 +188,15 @@ void PlaceShips(int numShips, int playerNumber, char* field, int maxX, int maxY,
 	int ret;
 	
 
-	while (shipNumber <= numShips)
+	while (shipNumber <= numShips) //Loops until all of player's ships have been placed
 	{
 		printf("**Ship %d location.**\n", shipNumber);
 		ret = PromptPlayerForCoords(playerNumber, &pos, maxX, maxY, fieldSize);
-		if (ret == -1)
+		if (ret == -1) //If player enters coordinate for ship that is larger than the field size
 		{
 			LoopMain();
 		}
-		field[pos] = 's';
+		field[pos] = 's'; //Places s wherever player specified coordinates
 		shipNumber = shipNumber + 1;
 	}
 
@@ -212,15 +212,15 @@ int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefe
 	
 	allShipsSunkField = (char*)malloc(fieldSize + 1);
 
-	while (indexOfField < fieldSize)
+	while (indexOfField < fieldSize) //Creates field of all 'o' of the size specified by player
 	{
 		*(allShipsSunkField + indexOfField) = 'o';
 		indexOfField = indexOfField + 1;
 	}
 
-	*(allShipsSunkField + indexOfField) = 0;
+	*(allShipsSunkField + indexOfField) = 0; //Sets null terminator
 
-	if (fieldOfDefender[coordPos] == 's')
+	if (fieldOfDefender[coordPos] == 's') //Changes 's' to 'o' if attacking player correctly guesses defender's ships location
 	{
 		fieldOfDefender[coordPos] = 'o';
 		printf("Player %d sunk Player %d's ship! \n", playerNumberOfAttacker, playerNumberOfDefender);
@@ -232,16 +232,16 @@ int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefe
 		printf("Player %d's ships are safe! \n", playerNumberOfDefender);
 	}
 
-	ret = strcmp(fieldOfDefender, allShipsSunkField);
+	ret = strcmp(fieldOfDefender, allShipsSunkField); //Compares field of defending player to a field of all sunk ships
 
-	if (ret == 0)
+	if (ret == 0) //If strings are the same
 	{
 		return 9999;
 	}
 
-	else if (ret != 0)
+	else if (ret != 0) //If strings are different
 	{
-		return sunkShip;
+		return sunkShip; //Returns 1 (how many ships are sunk)
 	}
 
 	else

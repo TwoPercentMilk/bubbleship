@@ -1,11 +1,18 @@
 #pragma once
 
 
+/*LoopMain
+Loops main function when players enter incorrect coordinates
+*/
+int LoopMain();
+
 
 /*BuildField
 Builds a field. Player has control to choose size of field. The field is an array of characters and should
-in the beginning every character should be an o. Do not use a null-terminator. This will
+in the beginning every character should be an o. This will
 need to dynamically allocate space for a character array and return the pointer.
+
+fieldSize: size of the field that the player decides (x axis * y axis)
 
 returns a pointer to an array of n characters
 */
@@ -23,6 +30,9 @@ Player 1, enter x coord>
 
 playerNumber: The id number of the player
 coordPos: Address where PromptPlayerForCoords should put the coordinate retrieved from the user
+maxX: size of the x axis
+maxY: size of the y axis
+fieldSize: size of the field (x axis * y axis)
 
 returns 0 on success
 returns -1 on error
@@ -36,18 +46,26 @@ This should call PromptPlayerForCoords
 
 Put an s anywhere there is a ship.
 
-Example run (if looking for 4 ships):
-Ship 1 location. Player 1 enter coord:> 3
-Ship 2 location. Player 1 enter coord:> 7
-Ship 3 location. Player 1 enter coord:> 13
-Ship 4 location. Player 1 enter coord:> 17
-
-This would result in a field like this:
-ooosooosooooosooosoo
+Example run (if looking for 2 ships):
+Ship 1 location. 
+Player 1 enter x coord:> 3
+Player 1 enter y coord:> 2
+Ship 2 location.
+Player 1 enter x coord:> 7
+Player 1 enter y coord:> 1
+Ship 1 location.
+Player 2 enter x coord:> 1
+Player 2 enter y coord:> 8
+Ship 2 location.
+Player 2 enter x coord:> 9
+Player 2 enter y coord:> 4
 
 numShips: The number of ships to place
 playerNumber: The id number of the player placing the ships
 field: A pointer to the character array which represents the field.
+maxX: size of the x axis
+maxY: size of the y axis
+fieldSize: size of the field (x axis * y axis)
 
 returns nothing
 */
@@ -62,18 +80,13 @@ Allows one player to launch attack against another player
 playerNumberOfAttacker: The id number of the attacking player
 playerNumberOfDefender: The id number of the defending player
 fieldOfDefender: A pointer to the defender's field (defender's field should be an array of characters)
-xpos: The x coordinate of the attack
+coordPos: Address where PromptPlayerForCoords should put the coordinate retrieved from the user
+fieldSize: size of the field (x axis * y axis)
 
 returns 9999 if all ships are sunk
 returns the number of ships sunk
 returns -1 on error
 */
 int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos, int fieldSize);
-
-
-/*LoopMain
-Loops main function when players enter incorrect coordinates
-*/
-int LoopMain();
 
 
