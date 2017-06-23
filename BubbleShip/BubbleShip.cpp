@@ -68,30 +68,43 @@ int LoopMain()
 
 		//Player One's turn
 		ret = PromptPlayerForCoords(playerOneNumber, &coord, xAxisInt, yAxisInt, fieldSize);
-		if (ret == -1)
+		if (ret == -1) //Occurs if player enters coordinates that are too large for field
 		{
 			LoopMain();
 		}
-		attackResults = LaunchAttackAgainstPlayer(playerOneNumber, playerTwoNumber, playerTwoField, coord, fieldSize);
 
-		printf("Player One sunk %d ships! \n", attackResults);
+		attackResults = LaunchAttackAgainstPlayer(playerOneNumber, playerTwoNumber, playerTwoField, coord, fieldSize);
+		
 		if (attackResults == 9999)
 		{
+			printf("Player One sunk all of Player 2's ships! ");
 			printf("Player One Wins!");
+
 			return 0; //Exit main function
 		}
 
+		else
+		{
+			printf("Player One sunk %d ships! \n", attackResults);
+		}
 
 		//Player Two's turn
 		PromptPlayerForCoords(playerTwoNumber, &coord, xAxisInt, yAxisInt, fieldSize);
 		attackResults = LaunchAttackAgainstPlayer(playerTwoNumber, playerOneNumber, playerOneField, coord, fieldSize);
 
-		printf("Player Two sunk %d ships! \n", attackResults);
 		if (attackResults == 9999)
 		{
+			printf("Player Two sunk all of Player One's ships! ");
 			printf("Player Two Wins!");
+
 			return 0; //Exit main function
 		}
+
+		else
+		{
+			printf("Player Two sunk %d ships! \n", attackResults);
+		}
+
 	}
 
 

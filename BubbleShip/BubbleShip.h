@@ -70,6 +70,10 @@ returns -1 on error
 */
 int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos, int fieldSize);
 
-int loopMain();
+
+/*LoopMain
+Loops main function when players enter incorrect coordinates
+*/
+int LoopMain();
 
 
