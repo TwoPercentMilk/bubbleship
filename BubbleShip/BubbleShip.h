@@ -27,7 +27,7 @@ coordPos: Address where PromptPlayerForCoords should put the coordinate retrieve
 returns 0 on success
 returns -1 on error
 */
-int PromptPlayerForCoords(int playerNumber, int* coordPos, int maxX, int fieldSize);
+int PromptPlayerForCoords(int playerNumber, int* coordPos, int maxX, int maxY, int fieldSize);
 
 /*PlaceShips
 Prompts the user for where to place some number of ships.
@@ -51,7 +51,7 @@ field: A pointer to the character array which represents the field.
 
 returns nothing
 */
-void PlaceShips(int numShips, int playerNumber, char* field, int maxX, int fieldSize);
+void PlaceShips(int numShips, int playerNumber, char* field, int maxX, int maxY, int fieldSize);
 
 
 
@@ -69,5 +69,7 @@ returns the number of ships sunk
 returns -1 on error
 */
 int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos, int fieldSize);
+
+int loopMain();
 
 
