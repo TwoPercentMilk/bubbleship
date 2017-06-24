@@ -33,11 +33,11 @@ int LoopMain()
 	int coord = 0;
 
 	//Player chooses how many ships
-	printf("How many ships do you want? (choose number between 1-19)");
-	numShipsStr = (char*)malloc(4);
-	gets_s(numShipsStr, 4);
+	printf("How many ships do you want? ");
+	numShipsStr = (char*)malloc(10);
+	gets_s(numShipsStr, 10);
 	numberOfShips = atoi(numShipsStr);
-	if (numberOfShips > 19)
+	if (numberOfShips > 9999999999)
 	{
 		printf("You can't place that many ships! ");
 		return -1;
