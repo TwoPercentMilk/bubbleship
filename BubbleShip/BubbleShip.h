@@ -1,5 +1,10 @@
 #pragma once
 
+#define MAX_PLAYER_DIGITS 2 //Maximum number of digits for the amount of players is 2 (includes null) (i.e., no more than 9 players
+#define MAX_PLAYERS 9 //Maximum number of players
+#define PLAYER_NUMBER_TO_INDEX(num) (num-1) //Subtracts 1 from player number, in order to start at 0th index
+#define POSITION_NUMBER_TO_INDEX(num) (num-1) //Subtracts 1 from pos int, in order to start at 0th index
+
 
 /*LoopMain
 Loops main function when players enter incorrect coordinates
@@ -69,7 +74,7 @@ fieldSize: size of the field (x axis * y axis)
 
 returns nothing
 */
-void PlaceShips(int numShips, int playerNumber, char* field, int maxX, int maxY, int fieldSize);
+void PlaceShips(int numShips, int playerNumber, char** playerField, int maxX, int maxY, int fieldSize);
 
 
 
@@ -87,6 +92,6 @@ returns 9999 if all ships are sunk
 returns the number of ships sunk
 returns -1 on error
 */
-int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos, int fieldSize);
+int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char** fieldOfDefender, int coordPos, int fieldSize);
 
 
