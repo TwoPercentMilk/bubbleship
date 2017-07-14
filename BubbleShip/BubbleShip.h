@@ -87,11 +87,12 @@ playerNumberOfDefender: The id number of the defending player
 fieldOfDefender: A pointer to the defender's field (defender's field should be an array of characters)
 coordPos: Address where PromptPlayerForCoords should put the coordinate retrieved from the user
 fieldSize: size of the field (x axis * y axis)
+numberOfPlayers: number of players still in the game. Subtracts by 1 if a player gets all of his ships sunk
 
 returns 9999 if all ships are sunk
 returns the number of ships sunk
 returns -1 on error
 */
-int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char** fieldOfDefender, int coordPos, int fieldSize);
+int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos, int fieldSize, int currentNumOfPlayers);
 
 
