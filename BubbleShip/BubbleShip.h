@@ -11,6 +11,23 @@ Loops main function when players enter incorrect coordinates
 */
 int LoopMain();
 
+/*ChooseNumberOfPlayers
+Allows player to choose how many players will participate in the game.
+
+returns the number of players*/
+int ChooseNumberOfPlayers();
+
+/*ChooseNumberOfShips
+Allows player to choose how many ships per person.
+
+returns the number of ships*/
+int ChooseNumberOfShips();
+
+/*ChooseFieldSize
+Allows player to choose the x and y coordinates of the field. Determines the size of the field.*/
+
+Field ChooseFieldSize();
+
 
 /*BuildField
 Builds a field. Player has control to choose size of field. The field is an array of characters and should
@@ -21,7 +38,7 @@ fieldSize: size of the field that the player decides (x axis * y axis)
 
 returns a pointer to an array of n characters
 */
-char* BuildField(int fieldSize);
+char* BuildField(Field fieldInfo);
 
 
 /*PromptPlayerForCoords
@@ -42,7 +59,7 @@ fieldSize: size of the field (x axis * y axis)
 returns 0 on success
 returns -1 on error
 */
-int PromptPlayerForCoords(int playerNumber, int* coordPos, int maxX, int maxY, int fieldSize);
+int PromptPlayerForCoords(int playerNumber, int* coordPos, Field fieldInfo);
 
 /*PlaceShips
 Prompts the user for where to place some number of ships.
@@ -74,7 +91,7 @@ fieldSize: size of the field (x axis * y axis)
 
 returns nothing
 */
-void PlaceShips(int numShips, int playerNumber, char** playerField, int maxX, int maxY, int fieldSize);
+void PlaceShips(int numShips, int playerNumber, char** playerField, Field fieldInfo);
 
 
 
@@ -93,6 +110,6 @@ returns 9999 if all ships are sunk
 returns the number of ships sunk
 returns -1 on error
 */
-int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos, int fieldSize, int currentNumOfPlayers);
+int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos, Field fieldInfo, int currentNumOfPlayers);
 
 

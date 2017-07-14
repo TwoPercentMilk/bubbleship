@@ -2,11 +2,19 @@
 //
 
 #include "stdafx.h"
-#include "BubbleShip.h"
 #include <Windows.h>
 #include <stdio.h>
 #include <string.h>
 
+
+//Creates structure called "Field"
+typedef struct _Field {
+	int fieldSize;
+	int xAxisInt;
+	int yAxisInt;
+} Field;
+
+#include "BubbleShip.h"
 
 int main()
 {
@@ -16,67 +24,35 @@ int main()
 
 int LoopMain()
 {
-	char* xAxis;
-	char* yAxis;
-	int xAxisInt;
-	int yAxisInt;
-	int fieldSize;
+	Field fieldInfo;
+	int numberOfPlayers;
 	char** playerFields;
 	int playerNumber = 1;
-	char* playerNumberChar;
 	int playerIndex = 0;
-	int numberOfPlayers;
 	int attackResults = 0;
 	int numberOfShips;
-	char* numShipsStr;
 	int ret;
 	int attPlayerNumber = 1;
 	int defPlayerNumber;
 	char* defPlayerNumberChar;
 	int coord = 0;
 	int indexOfOutField = 0;
-	char* allPlayersOutField;
+	char* playerOutField;
 	int currentNumOfPlayers;
-
-
-	//Choose number of players
-	printf("How many players? ");
-	playerNumberChar = (char*)malloc(MAX_PLAYER_DIGITS);
-	gets_s(playerNumberChar, MAX_PLAYER_DIGITS);
-	numberOfPlayers = atoi(playerNumberChar);
+	
+	numberOfPlayers = ChooseNumberOfPlayers(); //Prompts user to choose number of players. Returns the number of players.
 	currentNumOfPlayers = numberOfPlayers;
 
-	//Player chooses how many ships
-	printf("How many ships do you want? ");
-	numShipsStr = (char*)malloc(10);
-	gets_s(numShipsStr, 10);
-	numberOfShips = atoi(numShipsStr);
-	if (numberOfShips > 9999999999) //Occurs if player wants to place too many ships. Re-starts the game.
-	{
-		printf("You can't place that many ships! ");
-		return -1;
-	}
+	numberOfShips = ChooseNumberOfShips(); //Prompts user to choose number of ships per person. Returns the number of ships.
 
-	//Player chooses the sizes of the x axis
-	printf("Choose the size of your x axis. ");
-	xAxis = (char*)malloc(3);
-	gets_s(xAxis, 3);
-	xAxisInt = atoi(xAxis);
-
-	//Player chooses the size of the y axis
-	printf("Choose the size of your y axis. ");
-	yAxis = (char*)malloc(3);
-	gets_s(yAxis, 3);
-	yAxisInt = atoi(yAxis);
-
-	fieldSize = (xAxisInt * yAxisInt); //Size of the field
+	fieldInfo = ChooseFieldSize(); //Promopts user to choose x and y axes of field, and determines size of field. Returns structure containing x axis, y axis, and field size.
 
 	playerFields = (char**)malloc(numberOfPlayers * 4); //Allocates 4 bytes of space for playerFields (which is a char**. Pointers need 4 bytes of space)
 
 	//Builds the field for each player, with all empty spaces (i.e., all 'o')
 	while (playerIndex < numberOfPlayers)
 	{
-		playerFields[playerIndex] = BuildField(fieldSize);
+		playerFields[playerIndex] = BuildField(fieldInfo);
 		playerIndex = playerIndex + 1;
 	}
 	
@@ -84,7 +60,7 @@ int LoopMain()
 	//Places ships on each player's fields
 	while (playerNumber <= numberOfPlayers) //Loops through players' turns to place ships
 	{
-		PlaceShips(numberOfShips, playerNumber, playerFields, xAxisInt, yAxisInt, fieldSize);
+		PlaceShips(numberOfShips, playerNumber, playerFields, fieldInfo);
 		playerNumber = playerNumber + 1;
 
 		
@@ -95,16 +71,15 @@ int LoopMain()
 
 	while (1 == 1) //Loops forever
 	{
+		playerOutField = (char*)malloc(fieldInfo.fieldSize + 1); //Allocate space for a field of fieldSize + 1 (for null terminator)
 
-		allPlayersOutField = (char*)malloc(fieldSize + 1); //Allocate space for a field of fieldSize + 1 (for null terminator)
-
-		while (indexOfOutField < fieldSize) //Creates field of all 'x' of the size specified by player
+		while (indexOfOutField < fieldInfo.fieldSize) //Creates field of all 'x' of the size specified by player
 		{
-			*(allPlayersOutField + indexOfOutField) = 'x';
+			*(playerOutField + indexOfOutField) = 'x';
 			indexOfOutField = indexOfOutField + 1;
 		}
 
-		*(allPlayersOutField + indexOfOutField) = 0; //Sets null terminator
+		*(playerOutField + indexOfOutField) = 0; //Sets null terminator
 
 		indexOfOutField = 0;
 
@@ -112,16 +87,17 @@ int LoopMain()
 		{
 			printf("Player %d, who do you want to attack? ", attPlayerNumber);
 			defPlayerNumberChar = (char*)malloc(MAX_PLAYER_DIGITS);
-			gets_s(defPlayerNumberChar, MAX_PLAYER_DIGITS);			defPlayerNumber = atoi(defPlayerNumberChar);
+			gets_s(defPlayerNumberChar, MAX_PLAYER_DIGITS);
+			defPlayerNumber = atoi(defPlayerNumberChar);
 
 
-			ret = PromptPlayerForCoords(playerNumber, &coord, xAxisInt, yAxisInt, fieldSize);
+			ret = PromptPlayerForCoords(playerNumber, &coord, fieldInfo);
 			if (ret == -1) //Occurs if player enters coordinates that are too large for field. Re-starts game.
 			{
 				LoopMain();
 			}
 			
-			attackResults = LaunchAttackAgainstPlayer(playerNumber, defPlayerNumber, playerFields[PLAYER_NUMBER_TO_INDEX(defPlayerNumber)], coord, fieldSize, currentNumOfPlayers); //Return result of each turn
+			attackResults = LaunchAttackAgainstPlayer(playerNumber, defPlayerNumber, playerFields[PLAYER_NUMBER_TO_INDEX(defPlayerNumber)], coord, fieldInfo, currentNumOfPlayers); //Return result of each turn
 			
 			
 
@@ -137,9 +113,6 @@ int LoopMain()
 				currentNumOfPlayers--;
 				printf("All of Player %d's ships have been sunk. Player %d is out of the game! \n", defPlayerNumber, defPlayerNumber);
 
-				//TAKE OUT THESE TWO LINES?
-				//printf("%s", playerFields[PLAYER_NUMBER_TO_INDEX(defPlayerNumber)]);
-				//strcpy_s(playerFields[PLAYER_NUMBER_TO_INDEX(defPlayerNumber)], fieldSize + 1, allPlayersOutField);
 			}
 			else //Prints how many ships a player has sunk in the current turn.
 			{
@@ -150,8 +123,7 @@ int LoopMain()
 			if (playerNumber < numberOfPlayers)
 			{
 				playerNumber++;
-				printf("%s \n %s", playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)], allPlayersOutField);
-				while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)], allPlayersOutField) == 0)
+				while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)], playerOutField) == 0)
 				{
 					playerNumber++;
 					if (playerNumber > numberOfPlayers)
@@ -163,7 +135,7 @@ int LoopMain()
 			else
 			{
 				playerNumber = 1;
-				while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)], allPlayersOutField) == 0)
+				while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)], playerOutField) == 0)
 				{
 					playerNumber++;
 					if (playerNumber > numberOfPlayers)
@@ -178,7 +150,7 @@ int LoopMain()
 			if (attPlayerNumber < numberOfPlayers)
 			{
 				attPlayerNumber++;
-				while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(attPlayerNumber)], allPlayersOutField) == 0)
+				while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(attPlayerNumber)], playerOutField) == 0)
 				{
 					attPlayerNumber++;
 					if (attPlayerNumber > numberOfPlayers)
@@ -190,7 +162,7 @@ int LoopMain()
 			else
 			{
 				attPlayerNumber = 1;
-				while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(attPlayerNumber)], allPlayersOutField) == 0)
+				while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(attPlayerNumber)], playerOutField) == 0)
 				{
 					attPlayerNumber++;
 					if (attPlayerNumber > numberOfPlayers)
@@ -204,16 +176,74 @@ int LoopMain()
 	return -1; //Should never get here.
 }
 
-char* BuildField(int fieldSize)
+int ChooseNumberOfPlayers()
+{
+	char* playerNumberChar;
+	int numberOfPlayers;
+
+	//Choose number of players
+	printf("How many players? ");
+	playerNumberChar = (char*)malloc(MAX_PLAYER_DIGITS);
+	gets_s(playerNumberChar, MAX_PLAYER_DIGITS);
+	numberOfPlayers = atoi(playerNumberChar);
+
+	return numberOfPlayers;
+}
+
+int ChooseNumberOfShips()
+{
+	int numberOfShips;
+	char* numShipsStr;
+
+	//Player chooses how many ships
+	printf("How many ships do you want? ");
+	numShipsStr = (char*)malloc(10);
+	gets_s(numShipsStr, 10);
+	numberOfShips = atoi(numShipsStr);
+
+	if (numberOfShips > 9999999999) //Occurs if player wants to place too many ships. Re-starts the game.
+	{
+		printf("You can't place that many ships! ");
+		return -1;
+	}
+
+	return numberOfShips;
+}
+
+Field ChooseFieldSize()
+{
+	char* xAxis;
+	char* yAxis;
+	Field fieldAxesAndSize;
+
+	//Player chooses the sizes of the x axis
+	printf("Choose the size of your x axis. ");
+	xAxis = (char*)malloc(3);
+	gets_s(xAxis, 3);
+	fieldAxesAndSize.xAxisInt = atoi(xAxis);
+
+	//Player chooses the size of the y axis
+	printf("Choose the size of your y axis. ");
+	yAxis = (char*)malloc(3);
+	gets_s(yAxis, 3);
+	fieldAxesAndSize.yAxisInt = atoi(yAxis);
+
+	fieldAxesAndSize.fieldSize = (fieldAxesAndSize.xAxisInt * fieldAxesAndSize.yAxisInt); //Size of the field
+
+	return fieldAxesAndSize;
+}
+
+
+char* BuildField(Field fieldInfo)
 {
 	char* field;
 	int index;
 	index = 0;
 
-	field = (char*)malloc(fieldSize); //Dynamically allocates space of the user's chosen field size, and gives that space to a pointer
+	field = (char*)malloc(fieldInfo.fieldSize); //Dynamically allocates space of the user's chosen field size, and gives that space to a pointer
 
 
-	while (index < fieldSize)
+	while (index < fieldInfo.fieldSize)
 	{
 		*(field + index) = 'o';
 		index = index + 1;
@@ -225,7 +255,7 @@ char* BuildField(int fieldSize)
 }
 
 
-int PromptPlayerForCoords(int playerNumber, int* coordPos, int maxX, int maxY, int fieldSize)
+int PromptPlayerForCoords(int playerNumber, int* coordPos, Field fieldInfo)
 {
 
 	char* xCoord;
@@ -239,7 +269,7 @@ int PromptPlayerForCoords(int playerNumber, int* coordPos, int maxX, int maxY, i
 	gets_s(xCoord, 3);
 	xpos = atoi(xCoord);
 
-	if (xpos > maxX) //If player enters x coord that is too large, restarts game
+	if (xpos > fieldInfo.xAxisInt) //If player enters x coord that is too large, restarts game
 	{
 		printf("That x coordinate is too big! ");
 		return -1;
@@ -251,14 +281,14 @@ int PromptPlayerForCoords(int playerNumber, int* coordPos, int maxX, int maxY, i
 	gets_s(yCoord, 3);
 	ypos = atoi(yCoord);
 
-	if (ypos > maxY) //If player enters y coord that is too large, restarts game
+	if (ypos > fieldInfo.yAxisInt) //If player enters y coord that is too large, restarts game
 	{
 		printf("That y coordinate is too big! ");
 	}
 
-	*coordPos = ((maxX * ypos) - (maxX - xpos)); //Determines specific value for each coordinate pair
+	*coordPos = ((fieldInfo.xAxisInt * ypos) - (fieldInfo.xAxisInt - xpos)); //Determines specific value for each coordinate pair
 
-	if (*coordPos <= fieldSize) //Returns 0 when coordinates fit into field size
+	if (*coordPos <= fieldInfo.fieldSize) //Returns 0 when coordinates fit into field size
 	{
 		return 0;
 	}
@@ -270,7 +300,7 @@ int PromptPlayerForCoords(int playerNumber, int* coordPos, int maxX, int maxY, i
 
 }
 
-void PlaceShips(int numShips, int playerNumber, char** playerFields, int maxX, int maxY, int fieldSize)
+void PlaceShips(int numShips, int playerNumber, char** playerFields, Field fieldInfo)
 {
 	int pos;
 	int shipNumber = 1;
@@ -279,20 +309,19 @@ void PlaceShips(int numShips, int playerNumber, char** playerFields, int maxX, i
 	while (shipNumber <= numShips) //Loops until all of player's ships have been placed
 	{
 		printf("**Ship %d location.**\n", shipNumber);
-		ret = PromptPlayerForCoords(playerNumber, &pos, maxX, maxY, fieldSize); //Calls function so players can place their ship coordinates
+		ret = PromptPlayerForCoords(playerNumber, &pos, fieldInfo); //Calls function so players can place their ship coordinates
 		if (ret == -1) //If player enters coordinate for ship that is larger than the field size
 		{
 			LoopMain();
 		}
 		playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)][POSITION_NUMBER_TO_INDEX(pos)] = 's'; //Places s wherever player specified coordinates
-		printf("%s \n", playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)]);
 		shipNumber = shipNumber + 1;
 	}
 
 	return;
 }
 
-int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos, int fieldSize, int currentNumOfPlayers)
+int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos, Field fieldInfo, int currentNumOfPlayers)
 {
 	int sunkShip = 0;
 	int ret;
@@ -300,9 +329,9 @@ int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefe
 	char* allShipsSunkField;
 
 
-	allShipsSunkField = (char*)malloc(fieldSize + 1); //Allocate space for a field of fieldSize + 1 (for null terminator)
+	allShipsSunkField = (char*)malloc(fieldInfo.fieldSize + 1); //Allocate space for a field of fieldSize + 1 (for null terminator)
 
-	while (indexOfField < fieldSize) //Creates field of all 'o' of the size specified by player
+	while (indexOfField < fieldInfo.fieldSize) //Creates field of all 'o' of the size specified by player
 	{
 		*(allShipsSunkField + indexOfField) = 'o';
 		indexOfField = indexOfField + 1;
@@ -328,7 +357,7 @@ int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefe
 	if (ret == 0)
 	{
 		indexOfField = 0;
-		while (indexOfField < fieldSize) //Creates field of all 'x' of the size specified by player
+		while (indexOfField < fieldInfo.fieldSize) //Creates field of all 'x' of the size specified by player
 		{
 			*(fieldOfDefender + indexOfField) = 'x';
 			indexOfField = indexOfField + 1;
