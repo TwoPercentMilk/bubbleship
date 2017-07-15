@@ -55,11 +55,11 @@ int LoopMain()
 	{
 		playerOutField = CreateOutField(fieldInfo); //Creates field of all x's, which represents field of player that is out of the game.
 
-		while (playerNumber <= numberOfPlayers) //Players choose who they want to attack
+		while (playerNumber <= numberOfPlayers) 
 		{
-			defPlayerNumber = PrepareForAttack(playerNumber, numberOfPlayers);
+			defPlayerNumber = PrepareForAttack(playerNumber, numberOfPlayers); //Players choose who they want to attack
 
-			ret = PromptPlayerForCoords(playerNumber, &coord, fieldInfo);
+			ret = PromptPlayerForCoords(playerNumber, &coord, fieldInfo); //Players place ships on their fields
 			if (ret == -1) //Occurs if player enters coordinates that are too large for field. Re-starts game.
 			{
 				LoopMain();
@@ -67,35 +67,33 @@ int LoopMain()
 
 			attackResults = CallLaunchAttackAgainstPlayer(playerNumber, defPlayerNumber, playerFields[PLAYER_NUMBER_TO_INDEX(defPlayerNumber)], coord, fieldInfo, currentNumOfPlayers);
 			
-			returnOfResults = ResultsOfMatch(attackResults, playerNumber, defPlayerNumber, currentNumOfPlayers); //Exits main function upon only 1 player being left in game
-
+			returnOfResults = ResultsOfMatch(attackResults, playerNumber, defPlayerNumber, currentNumOfPlayers);
 			if (returnOfResults == 0)
 			{
-				return 0;
+				return 0; //Exit main function
 			}
 			else if (returnOfResults == 10)
 			{
-				currentNumOfPlayers--;
+				currentNumOfPlayers--; //Subtracts 1 player from current number of players (defending player is out of the game)
 			}
 			else
 			{
-				currentNumOfPlayers = currentNumOfPlayers;
+				currentNumOfPlayers = currentNumOfPlayers; //Keeps current number of players the same (either not all ships were sunk, or no ships were sunk)
 			}
 			
-			playerNumber = RotateThroughPlayerTurns(playerNumber, numberOfPlayers, playerFields, playerOutField);
+			playerNumber = RotateThroughPlayerTurns(playerNumber, numberOfPlayers, playerFields, playerOutField); //Rotates through players in turn order, skipping players who lost
 		}
 	}
 	
 	return -1; //Should never get here.
 }
 
-
+//Player chooses how many players will be in the game
 int ChooseNumberOfPlayers()
 {
 	char* playerNumberChar;
 	int numberOfPlayers;
 
-	//Choose number of players
 	printf("How many players? ");
 	playerNumberChar = (char*)malloc(MAX_PLAYER_DIGITS);
 	gets_s(playerNumberChar, MAX_PLAYER_DIGITS);
@@ -104,13 +102,12 @@ int ChooseNumberOfPlayers()
 	return numberOfPlayers;
 }
 
-
+//Player chooses how many ships can be placed on each player's field
 int ChooseNumberOfShips()
 {
 	int numberOfShips;
 	char* numShipsStr;
 
-	//Player chooses how many ships
 	printf("How many ships do you want? ");
 	numShipsStr = (char*)malloc(10);
 	gets_s(numShipsStr, 10);
@@ -125,7 +122,7 @@ int ChooseNumberOfShips()
 	return numberOfShips;
 }
 
-
+//Player chooses the x and y axes of the field, setting the size of the field
 Field ChooseFieldSize()
 {
 	char* xAxis;
@@ -149,7 +146,7 @@ Field ChooseFieldSize()
 	return fieldAxesAndSize;
 }
 
-
+//Calls BuildField function, returning double pointer that is a pointer to an array of pointers for each player's field
 char** CallBuildField(int numberOfPlayers, Field fieldInfo)
 {
 	int playerIndex = 0;
@@ -167,14 +164,14 @@ char** CallBuildField(int numberOfPlayers, Field fieldInfo)
 	return fieldOfPlayerPointer;
 }
 
-
+//Builds a field of all o's for each player of specified field size
 char* BuildField(Field fieldInfo)
 {
 	char* field;
 	int index;
 	index = 0;
 
-	field = (char*)malloc(fieldInfo.fieldSize); //Dynamically allocates space of the user's chosen field size, and gives that space to a pointer
+	field = (char*)malloc(fieldInfo.fieldSize); 
 
 
 	while (index < fieldInfo.fieldSize)
@@ -188,6 +185,8 @@ char* BuildField(Field fieldInfo)
 	return field;
 }
 
+
+//Calls PlaceShips function for each player
 void CallPlaceShips(int numberOfPlayers, int playerNumber, int numberOfShips, char** playerFields, Field fieldInfo)
 {
 	while (playerNumber <= numberOfPlayers) //Loops through players' turns to place ships
@@ -197,7 +196,7 @@ void CallPlaceShips(int numberOfPlayers, int playerNumber, int numberOfShips, ch
 	}
 }
 
-
+//Prompts player to enter x and y coordinates
 int PromptPlayerForCoords(int playerNumber, int* coordPos, Field fieldInfo)
 {
 
@@ -243,6 +242,7 @@ int PromptPlayerForCoords(int playerNumber, int* coordPos, Field fieldInfo)
 
 }
 
+//Places ships on each player's fields, changing 'o' to 's'
 void PlaceShips(int numShips, int playerNumber, char** playerFields, Field fieldInfo)
 {
 	int pos;
@@ -252,7 +252,7 @@ void PlaceShips(int numShips, int playerNumber, char** playerFields, Field field
 	while (shipNumber <= numShips) //Loops until all of player's ships have been placed
 	{
 		printf("**Ship %d location.**\n", shipNumber);
-		ret = PromptPlayerForCoords(playerNumber, &pos, fieldInfo); //Calls function so players can place their ship coordinates
+		ret = PromptPlayerForCoords(playerNumber, &pos, fieldInfo); //Calls function so players can enter coordinates for where to place ships
 		if (ret == -1) //If player enters coordinate for ship that is larger than the field size
 		{
 			LoopMain();
@@ -264,6 +264,7 @@ void PlaceShips(int numShips, int playerNumber, char** playerFields, Field field
 	return;
 }
 
+//Create a field of all x's of specified field size, representing a field of a player who lost
 char* CreateOutField(Field fieldInfo)
 {
 	char* playerOutField; 
@@ -284,6 +285,7 @@ char* CreateOutField(Field fieldInfo)
 	return playerOutField;
 }
 
+//Asks attacking player who they want to attack
 int PrepareForAttack(int playerNumber, int numberOfPlayers)
 {
 	char* defPlayerNumberChar;
@@ -297,6 +299,7 @@ int PrepareForAttack(int playerNumber, int numberOfPlayers)
 	return defPlayerNumber;
 }
 
+//Calls LaunchAttackAgainstPlayer and returns the results of the attack
 int CallLaunchAttackAgainstPlayer(int playerNumber, int defPlayerNumber, char* fieldOfDefender, int coord, Field fieldInfo, int currentNumOfPlayers)
 {
 	int attackResults;
@@ -306,6 +309,7 @@ int CallLaunchAttackAgainstPlayer(int playerNumber, int defPlayerNumber, char* f
 	return attackResults;
 }
 
+//Launches an attack against another player
 int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos, Field fieldInfo, int currentNumOfPlayers)
 {
 	int sunkShip = 0;
@@ -316,7 +320,7 @@ int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefe
 
 	allShipsSunkField = (char*)malloc(fieldInfo.fieldSize + 1); //Allocate space for a field of fieldSize + 1 (for null terminator)
 
-	while (indexOfField < fieldInfo.fieldSize) //Creates field of all 'o' of the size specified by player
+	while (indexOfField < fieldInfo.fieldSize) //Creates field of all 'o' of the size specified by player, to compare a field where all ships are sunk
 	{
 		*(allShipsSunkField + indexOfField) = 'o';
 		indexOfField = indexOfField + 1;
@@ -339,28 +343,28 @@ int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefe
 
 	ret = strcmp(fieldOfDefender, allShipsSunkField); //Compares field of defending player to a field of all sunk ships
 
-	if (ret == 0)
+	if (ret == 0) //Field of defending player and all sunk ships field are the same
 	{
 		indexOfField = 0;
-		while (indexOfField < fieldInfo.fieldSize) //Creates field of all 'x' of the size specified by player
+		while (indexOfField < fieldInfo.fieldSize) //Replaces defending player's field with all x's, signifying that they lost
 		{
 			*(fieldOfDefender + indexOfField) = 'x';
 			indexOfField = indexOfField + 1;
 		}
 		*(fieldOfDefender + indexOfField) = 0; //Sets null terminator
 
-		if (currentNumOfPlayers == 2)
+		if (currentNumOfPlayers == 2) //Runs if the defending player lost and there is only one other remaining player in the game
 		{
 			return 9999;
 		}
-		else
+		else //Runs if defending player lost but there are more at least 2 players still in the game
 		{
 			return 100;
 		}
 	}
-	else if (ret != 0) //If strings are different
+	else if (ret != 0) //Runs if defending player still has at least 1 ship left
 	{
-		return sunkShip; //Returns 1 (how many ships are sunk this turn)
+		return sunkShip; //Returns how many ships were sunk on this turn
 	}
 	else
 	{
@@ -369,15 +373,16 @@ int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefe
 
 }
 
+//Prints the results of the match
 int ResultsOfMatch(int attackResults, int playerNumber, int defPlayerNumber, int currentNumOfPlayers)
 {
-	if (attackResults == 9999) //Occurs when one player sinks all (or the last remaining) of another player's ships
+	if (attackResults == 9999) //Occurs when defending player has all ships sunk, and only 1 player remains in the game
 	{
 		printf("Player %d sunk Player %d's last ship! ", playerNumber, defPlayerNumber);
 		printf("Player %d Wins!", playerNumber);
 		return 0;
 	}
-	else if (attackResults == 100)
+	else if (attackResults == 100) //Prints when defending player lost but there are more at least 2 players still in the game
 	{
 		printf("All of Player %d's ships have been sunk. Player %d is out of the game! \n", defPlayerNumber, defPlayerNumber);
 		return 10;
@@ -389,16 +394,16 @@ int ResultsOfMatch(int attackResults, int playerNumber, int defPlayerNumber, int
 	}
 }
 
+//Rotates through player's turns, skipping players who are out of the game
 int RotateThroughPlayerTurns(int playerNumber, int numberOfPlayers, char** playerFields, char* playerOutField)
 {
-	//Rotates through players turns in sequential order. When all players have had a turn, player 1 takes their next turn.
 	if (playerNumber < numberOfPlayers)
 	{
-		playerNumber++;
-		while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)], playerOutField) == 0)
+		playerNumber++; //Go to next player
+		while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)], playerOutField) == 0) //Go to next player if current player is out of the game
 		{
 			playerNumber++;
-			if (playerNumber > numberOfPlayers)
+			if (playerNumber > numberOfPlayers) //When player number is larger than the number of players in the game, go back to player 1
 			{
 				playerNumber = 1;
 			}
@@ -406,11 +411,11 @@ int RotateThroughPlayerTurns(int playerNumber, int numberOfPlayers, char** playe
 	}
 	else
 	{
-		playerNumber = 1;
-		while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)], playerOutField) == 0)
+		playerNumber = 1; //Goes to player 1 if last player was equal to the number of players in the game
+		while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)], playerOutField) == 0) //Go to next player if current player is out of the game
 		{
 			playerNumber++;
-			if (playerNumber > numberOfPlayers)
+			if (playerNumber > numberOfPlayers) //When player number is larger than the number of players in the game, go back to player 1
 			{
 				playerNumber = 1;
 			}
