@@ -24,157 +24,71 @@ int main()
 
 int LoopMain()
 {
-	Field fieldInfo;
-	int numberOfPlayers;
-	char** playerFields;
-	int playerNumber = 1;
-	int playerIndex = 0;
-	int attackResults = 0;
-	int numberOfShips;
-	int ret;
-	int attPlayerNumber = 1;
-	int defPlayerNumber;
-	char* defPlayerNumberChar;
-	int coord = 0;
-	int indexOfOutField = 0;
-	char* playerOutField;
 	int currentNumOfPlayers;
+	int numberOfPlayers;
+	int numberOfShips;
+	Field fieldInfo;
+	char** playerFields;
+	int ret;
+	int playerNumber = 1;
+	int attackResults;
+	int defPlayerNumber;
+	int coord = 0;
+	char* playerOutField;
+	int returnOfResults;
+	
 	
 	numberOfPlayers = ChooseNumberOfPlayers(); //Prompts user to choose number of players. Returns the number of players.
 	currentNumOfPlayers = numberOfPlayers;
 
 	numberOfShips = ChooseNumberOfShips(); //Prompts user to choose number of ships per person. Returns the number of ships.
 
-	fieldInfo = ChooseFieldSize(); //Promopts user to choose x and y axes of field, and determines size of field. Returns structure containing x axis, y axis, and field size.
-
-	playerFields = (char**)malloc(numberOfPlayers * 4); //Allocates 4 bytes of space for playerFields (which is a char**. Pointers need 4 bytes of space)
-
-	//Builds the field for each player, with all empty spaces (i.e., all 'o')
-	while (playerIndex < numberOfPlayers)
-	{
-		playerFields[playerIndex] = BuildField(fieldInfo);
-		playerIndex = playerIndex + 1;
-	}
-	
-
-	//Places ships on each player's fields
-	while (playerNumber <= numberOfPlayers) //Loops through players' turns to place ships
-	{
-		PlaceShips(numberOfShips, playerNumber, playerFields, fieldInfo);
-		playerNumber = playerNumber + 1;
-
+	fieldInfo = ChooseFieldSize(); //Prompts user to choose x and y axes of field, and determines size of field. Returns structure containing x axis, y axis, and field size.
 		
+	playerFields = CallBuildField(numberOfPlayers, fieldInfo); //Calls BuildField function. Returns pointer to players' fields.
 
-	}
+	CallPlaceShips(numberOfPlayers, playerNumber, numberOfShips, playerFields, fieldInfo);
+	playerNumber = 1; //Prepares for first turn, starting with player 1
 
-	playerNumber = 1;
 
 	while (1 == 1) //Loops forever
 	{
-		playerOutField = (char*)malloc(fieldInfo.fieldSize + 1); //Allocate space for a field of fieldSize + 1 (for null terminator)
+		playerOutField = CreateOutField(fieldInfo); //Creates field of all x's, which represents field of player that is out of the game.
 
-		while (indexOfOutField < fieldInfo.fieldSize) //Creates field of all 'x' of the size specified by player
+		while (playerNumber <= numberOfPlayers) //Players choose who they want to attack
 		{
-			*(playerOutField + indexOfOutField) = 'x';
-			indexOfOutField = indexOfOutField + 1;
-		}
-
-		*(playerOutField + indexOfOutField) = 0; //Sets null terminator
-
-		indexOfOutField = 0;
-
-		while (attPlayerNumber <= numberOfPlayers) //Players choose who they want to attack
-		{
-			printf("Player %d, who do you want to attack? ", attPlayerNumber);
-			defPlayerNumberChar = (char*)malloc(MAX_PLAYER_DIGITS);
-			gets_s(defPlayerNumberChar, MAX_PLAYER_DIGITS);
-			defPlayerNumber = atoi(defPlayerNumberChar);
-
+			defPlayerNumber = PrepareForAttack(playerNumber, numberOfPlayers);
 
 			ret = PromptPlayerForCoords(playerNumber, &coord, fieldInfo);
 			if (ret == -1) //Occurs if player enters coordinates that are too large for field. Re-starts game.
 			{
 				LoopMain();
 			}
-			
-			attackResults = LaunchAttackAgainstPlayer(playerNumber, defPlayerNumber, playerFields[PLAYER_NUMBER_TO_INDEX(defPlayerNumber)], coord, fieldInfo, currentNumOfPlayers); //Return result of each turn
-			
-			
 
-			if (attackResults == 9999) //Occurs when one player sinks all (or the last remaining) of another player's ships
+			attackResults = CallLaunchAttackAgainstPlayer(playerNumber, defPlayerNumber, playerFields[PLAYER_NUMBER_TO_INDEX(defPlayerNumber)], coord, fieldInfo, currentNumOfPlayers);
+			
+			returnOfResults = ResultsOfMatch(attackResults, playerNumber, defPlayerNumber, currentNumOfPlayers); //Exits main function upon only 1 player being left in game
+
+			if (returnOfResults == 0)
 			{
-				printf("Player %d sunk Player %d's last ship! ", attPlayerNumber, defPlayerNumber);
-				printf("Player %d Wins!", attPlayerNumber);
-
-				return 0; //Exit main function	
+				return 0;
 			}
-				else if (attackResults == 100)
+			else if (returnOfResults == 10)
 			{
 				currentNumOfPlayers--;
-				printf("All of Player %d's ships have been sunk. Player %d is out of the game! \n", defPlayerNumber, defPlayerNumber);
-
-			}
-			else //Prints how many ships a player has sunk in the current turn.
-			{
-				printf("Player %d sunk %d ship! \n", playerNumber, attackResults);
-			}
-
-			//Rotates through players turns in sequential order. When all players have had a turn, player 1 takes their next turn.
-			if (playerNumber < numberOfPlayers)
-			{
-				playerNumber++;
-				while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)], playerOutField) == 0)
-				{
-					playerNumber++;
-					if (playerNumber > numberOfPlayers)
-					{
-						playerNumber = 1;
-					}
-				}
 			}
 			else
 			{
-				playerNumber = 1;
-				while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)], playerOutField) == 0)
-				{
-					playerNumber++;
-					if (playerNumber > numberOfPlayers)
-					{
-						playerNumber = 1;
-					}
-				}
+				currentNumOfPlayers = currentNumOfPlayers;
 			}
-
-			//Rotates through players turns in sequential order. When all players have had a turn, player 1 takes their next turn.
-
-			if (attPlayerNumber < numberOfPlayers)
-			{
-				attPlayerNumber++;
-				while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(attPlayerNumber)], playerOutField) == 0)
-				{
-					attPlayerNumber++;
-					if (attPlayerNumber > numberOfPlayers)
-					{
-						attPlayerNumber = 1;
-					}
-				}
-			}
-			else
-			{
-				attPlayerNumber = 1;
-				while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(attPlayerNumber)], playerOutField) == 0)
-				{
-					attPlayerNumber++;
-					if (attPlayerNumber > numberOfPlayers)
-					{
-						attPlayerNumber = 1;
-					}
-				}
-			}
+			
+			playerNumber = RotateThroughPlayerTurns(playerNumber, numberOfPlayers, playerFields, playerOutField);
 		}
 	}
+	
 	return -1; //Should never get here.
 }
+
 
 int ChooseNumberOfPlayers()
 {
@@ -189,6 +103,7 @@ int ChooseNumberOfPlayers()
 
 	return numberOfPlayers;
 }
+
 
 int ChooseNumberOfShips()
 {
@@ -209,6 +124,7 @@ int ChooseNumberOfShips()
 
 	return numberOfShips;
 }
+
 
 Field ChooseFieldSize()
 {
@@ -234,6 +150,24 @@ Field ChooseFieldSize()
 }
 
 
+char** CallBuildField(int numberOfPlayers, Field fieldInfo)
+{
+	int playerIndex = 0;
+	char** fieldOfPlayerPointer;
+
+	fieldOfPlayerPointer = (char**)malloc(numberOfPlayers * 4);
+
+	//Builds the field for each player, with all empty spaces (i.e., all 'o')
+	while (playerIndex < numberOfPlayers)
+	{
+		fieldOfPlayerPointer[playerIndex] = BuildField(fieldInfo);
+		playerIndex = playerIndex + 1;
+	}
+
+	return fieldOfPlayerPointer;
+}
+
+
 char* BuildField(Field fieldInfo)
 {
 	char* field;
@@ -252,6 +186,15 @@ char* BuildField(Field fieldInfo)
 	*(field + index) = 0; //Sets null terminator
 
 	return field;
+}
+
+void CallPlaceShips(int numberOfPlayers, int playerNumber, int numberOfShips, char** playerFields, Field fieldInfo)
+{
+	while (playerNumber <= numberOfPlayers) //Loops through players' turns to place ships
+	{
+		PlaceShips(numberOfShips, playerNumber, playerFields, fieldInfo);
+		playerNumber = playerNumber + 1;
+	}
 }
 
 
@@ -321,6 +264,48 @@ void PlaceShips(int numShips, int playerNumber, char** playerFields, Field field
 	return;
 }
 
+char* CreateOutField(Field fieldInfo)
+{
+	char* playerOutField; 
+	int indexOfOutField = 0;
+
+	playerOutField = (char*)malloc(fieldInfo.fieldSize + 1); //Allocate space for a field of fieldSize + 1 (for null terminator)
+
+	while (indexOfOutField < fieldInfo.fieldSize) //Creates field of all 'x' of the size specified by player
+	{
+		*(playerOutField + indexOfOutField) = 'x';
+		indexOfOutField = indexOfOutField + 1;
+	}
+
+	*(playerOutField + indexOfOutField) = 0; //Sets null terminator
+
+	indexOfOutField = 0;
+
+	return playerOutField;
+}
+
+int PrepareForAttack(int playerNumber, int numberOfPlayers)
+{
+	char* defPlayerNumberChar;
+	int defPlayerNumber;
+	
+		printf("Player %d, who do you want to attack? ", playerNumber);
+		defPlayerNumberChar = (char*)malloc(MAX_PLAYER_DIGITS);
+		gets_s(defPlayerNumberChar, MAX_PLAYER_DIGITS);
+		defPlayerNumber = atoi(defPlayerNumberChar);
+
+	return defPlayerNumber;
+}
+
+int CallLaunchAttackAgainstPlayer(int playerNumber, int defPlayerNumber, char* fieldOfDefender, int coord, Field fieldInfo, int currentNumOfPlayers)
+{
+	int attackResults;
+
+	attackResults = LaunchAttackAgainstPlayer(playerNumber, defPlayerNumber, fieldOfDefender, coord, fieldInfo, currentNumOfPlayers); //Return result of each turn
+	
+	return attackResults;
+}
+
 int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos, Field fieldInfo, int currentNumOfPlayers)
 {
 	int sunkShip = 0;
@@ -382,4 +367,54 @@ int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefe
 		return -1; //Returns on error
 	}
 
+}
+
+int ResultsOfMatch(int attackResults, int playerNumber, int defPlayerNumber, int currentNumOfPlayers)
+{
+	if (attackResults == 9999) //Occurs when one player sinks all (or the last remaining) of another player's ships
+	{
+		printf("Player %d sunk Player %d's last ship! ", playerNumber, defPlayerNumber);
+		printf("Player %d Wins!", playerNumber);
+		return 0;
+	}
+	else if (attackResults == 100)
+	{
+		printf("All of Player %d's ships have been sunk. Player %d is out of the game! \n", defPlayerNumber, defPlayerNumber);
+		return 10;
+	}
+	else //Prints how many ships a player has sunk in the current turn.
+	{
+		printf("Player %d sunk %d ship! \n", playerNumber, attackResults);
+		return 100;
+	}
+}
+
+int RotateThroughPlayerTurns(int playerNumber, int numberOfPlayers, char** playerFields, char* playerOutField)
+{
+	//Rotates through players turns in sequential order. When all players have had a turn, player 1 takes their next turn.
+	if (playerNumber < numberOfPlayers)
+	{
+		playerNumber++;
+		while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)], playerOutField) == 0)
+		{
+			playerNumber++;
+			if (playerNumber > numberOfPlayers)
+			{
+				playerNumber = 1;
+			}
+		}
+	}
+	else
+	{
+		playerNumber = 1;
+		while (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)], playerOutField) == 0)
+		{
+			playerNumber++;
+			if (playerNumber > numberOfPlayers)
+			{
+				playerNumber = 1;
+			}
+		}
+	}
+	return playerNumber;
 }

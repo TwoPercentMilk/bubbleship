@@ -28,17 +28,38 @@ Allows player to choose the x and y coordinates of the field. Determines the siz
 
 Field ChooseFieldSize();
 
+/*CallBuildField
+Calls the function BuildField for each player.
+
+numberOfPlayers: the number of players in the game
+fieldInfo: structure including x axis, y axis, and size of field
+
+returns nothing*/
+char** CallBuildField(int numberOfPlayers, Field fieldInfo);
+
 
 /*BuildField
 Builds a field. Player has control to choose size of field. The field is an array of characters and should
 in the beginning every character should be an o. This will
 need to dynamically allocate space for a character array and return the pointer.
 
-fieldSize: size of the field that the player decides (x axis * y axis)
+fieldInfo: structure including x axis, y axis, and size of field
 
 returns a pointer to an array of n characters
 */
 char* BuildField(Field fieldInfo);
+
+/*CallPlaceShips
+Calls the function PlaceShips for each player in the game.
+
+numberOfPlayers: the number of players in the game
+playerNumber: the id number of the current attacking player
+numberOfShips: the number of ships the players can place
+playerFields: a double pointer; points to a pointer for a specific player, that points to a field array
+fieldInfo: structure including x axis, y axis, and size of field
+
+returns nothing*/
+void CallPlaceShips(int numberOfPlayers, int playerNumber, int numberOfShips, char** playerFields, Field fieldInfo);
 
 
 /*PromptPlayerForCoords
@@ -52,9 +73,7 @@ Player 1, enter x coord>
 
 playerNumber: The id number of the player
 coordPos: Address where PromptPlayerForCoords should put the coordinate retrieved from the user
-maxX: size of the x axis
-maxY: size of the y axis
-fieldSize: size of the field (x axis * y axis)
+fieldInfo: structure including x axis, y axis, and size of field
 
 returns 0 on success
 returns -1 on error
@@ -84,17 +103,43 @@ Player 2 enter y coord:> 4
 
 numShips: The number of ships to place
 playerNumber: The id number of the player placing the ships
-field: A pointer to the character array which represents the field.
-maxX: size of the x axis
-maxY: size of the y axis
-fieldSize: size of the field (x axis * y axis)
+playerField: a double pointer; points to a pointer for a specific player, that points to a field array
+fieldInfo: structure including x axis, y axis, and size of field
 
 returns nothing
 */
 void PlaceShips(int numShips, int playerNumber, char** playerField, Field fieldInfo);
 
+/*CreateOutField
+Create a field of all x's, which represents a player's field when they are out of the game.
 
+fieldInfo: structure including x axis, y axis, and size of field
 
+returns field of all x's.
+*/
+char* CreateOutField(Field fieldInfo);
+
+/*PrepareForAttack
+Asks player who they want to attack. Calls PromptPlayerForCoords to place guess coordinate.
+
+playerNumber: the id number of the attacking player
+numberOfPlayers: number of players in the game
+
+returns player number of defender*/
+int PrepareForAttack(int playerNumber, int numberOfPlayers);
+
+/*CallLaunchAttackAgainstPlayer
+Calls the function LaunchAttackAgainstPlayer.
+
+playerNumber: the id number of the attacking player
+defPlayerNumber: the id number of the defending player
+fieldOfDefender: A pointer to the defender's field, which is an array of characters
+coord: the specific spot on the field where the attacking player is attacking
+fieldInfo: structure including x axis, y axis, and size of field
+currentNumOfPlayers: the current number of players, not including players who already lost
+
+returns results of the attack*/
+int CallLaunchAttackAgainstPlayer(int playerNumber, int defPlayerNumber, char* fieldOfDefender, int coord, Field fieldInfo, int currentNumOfPlayers);
 
 /*LaunchAttackAgainstPlayer
 Allows one player to launch attack against another player
@@ -103,13 +148,40 @@ playerNumberOfAttacker: The id number of the attacking player
 playerNumberOfDefender: The id number of the defending player
 fieldOfDefender: A pointer to the defender's field (defender's field should be an array of characters)
 coordPos: Address where PromptPlayerForCoords should put the coordinate retrieved from the user
-fieldSize: size of the field (x axis * y axis)
-numberOfPlayers: number of players still in the game. Subtracts by 1 if a player gets all of his ships sunk
+fieldInfo: structure including x axis, y axis, and size of field
+currentNumOfPlayers: number of players still in the game, not including players who already lost
 
-returns 9999 if all ships are sunk
-returns the number of ships sunk
+returns 9999 if all ships are sunk and only 1 player remains
+returns 100 if all ships were sunk but more than 2 or more players remain
+returns the number of sunken ships if 1 ship is sunk, but others still remain on the players' field
 returns -1 on error
 */
 int LaunchAttackAgainstPlayer(int playerNumberOfAttacker, int playerNumberOfDefender, char* fieldOfDefender, int coordPos, Field fieldInfo, int currentNumOfPlayers);
+
+/*ResultsOfMatch
+Prints results of match.
+
+attackResults: return value of LaunchAttackAgainstPlayer
+playerNumber: the id number of the current attacking player
+defPlayerNumber: the id number of the current defending player
+currentNumOfPlayers: the current number of players, not including players who already lost
+
+returns 0 if only one player remains
+returns 10 if the attacking player sunk a shihp
+returns 100 if attacking player misses*/
+int ResultsOfMatch(int attackResults, int playerNumber, int defPlayerNumber, int currentNumOfPlayers);
+
+
+/*RotateThroughPlayerTurns
+Rotates through players' turns, skipping players who are out of the game.
+
+playerNumber: the id number of the current attacking player
+numberOfPlayers: number of players in the game
+playerFields: a double pointer; points to a pointer for a specific player, that points to a field array
+playerOutField: an array to a field of all x's
+
+return playerNumber*/
+int RotateThroughPlayerTurns(int playerNumber, int numberOfPlayers, char** playerFields, char* playerOutField);
+
 
 
