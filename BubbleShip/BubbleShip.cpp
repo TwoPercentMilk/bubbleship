@@ -12,6 +12,7 @@ typedef struct _Field {
 	int fieldSize;
 	int xAxisInt;
 	int yAxisInt;
+	int returnError;
 } Field;
 
 #include "BubbleShip.h"
@@ -38,14 +39,22 @@ int LoopMain()
 	int returnOfResults;
 	
 	
-	numberOfPlayers = ChooseNumberOfPlayers(); //Prompts user to choose number of players. Returns the number of players.
+	do {
+		numberOfPlayers = ChooseNumberOfPlayers(); //Prompts user to choose number of players. Returns the number of players.
+	} while (numberOfPlayers == -1); //Loops ChooseNumberOfPlayers if player enters number of players as <2 or >9
+
 	currentNumOfPlayers = numberOfPlayers;
 
-	numberOfShips = ChooseNumberOfShips(); //Prompts user to choose number of ships per person. Returns the number of ships.
+	do {
+		fieldInfo = ChooseFieldSize(); //Prompts user to choose x and y axes of field, and determines size of field. Returns structure containing x axis, y axis, and field size.
+	} while (fieldInfo.returnError == -1); //Loops ChooseFieldSize if player enters coordinates that are >10 or <2
 
-	fieldInfo = ChooseFieldSize(); //Prompts user to choose x and y axes of field, and determines size of field. Returns structure containing x axis, y axis, and field size.
-		
 	playerFields = CallBuildField(numberOfPlayers, fieldInfo); //Calls BuildField function. Returns pointer to players' fields.
+
+	do {
+		numberOfShips = ChooseNumberOfShips(fieldInfo); //Prompts user to choose number of ships per person. Returns the number of ships.
+	} while (numberOfShips == -1); //Loops ChooseNumberOfShips if player enters number of ships >= the size of the field
+
 
 	CallPlaceShips(numberOfPlayers, playerNumber, numberOfShips, playerFields, fieldInfo);
 	playerNumber = 1; //Prepares for first turn, starting with player 1
@@ -57,7 +66,10 @@ int LoopMain()
 
 		while (playerNumber <= numberOfPlayers) 
 		{
-			defPlayerNumber = PrepareForAttack(playerNumber, numberOfPlayers); //Players choose who they want to attack
+			do {
+				defPlayerNumber = PrepareForAttack(playerNumber, numberOfPlayers, playerFields, playerOutField); //Players choose who they want to attack
+			} while (defPlayerNumber == -1);
+			
 
 			ret = PromptPlayerForCoords(playerNumber, &coord, fieldInfo); //Players place ships on their fields
 			if (ret == -1) //Occurs if player enters coordinates that are too large for field. Re-starts game.
@@ -94,32 +106,26 @@ int ChooseNumberOfPlayers()
 	char* playerNumberChar;
 	int numberOfPlayers;
 
-	printf("How many players? ");
-	playerNumberChar = (char*)malloc(MAX_PLAYER_DIGITS);
-	gets_s(playerNumberChar, MAX_PLAYER_DIGITS);
+
+	printf("How many players? (choose between 2 and 9) ");
+	playerNumberChar = (char*)malloc(MAX_PLAYER_DIGITS + 1);
+	gets_s(playerNumberChar, MAX_PLAYER_DIGITS + 1);
 	numberOfPlayers = atoi(playerNumberChar);
 
-	return numberOfPlayers;
-}
-
-//Player chooses how many ships can be placed on each player's field
-int ChooseNumberOfShips()
-{
-	int numberOfShips;
-	char* numShipsStr;
-
-	printf("How many ships do you want? ");
-	numShipsStr = (char*)malloc(10);
-	gets_s(numShipsStr, 10);
-	numberOfShips = atoi(numShipsStr);
-
-	if (numberOfShips > 9999999999) //Occurs if player wants to place too many ships. Re-starts the game.
+	if (numberOfPlayers > 9)
 	{
-		printf("You can't place that many ships! ");
+		printf("That's too many players! \n");
 		return -1;
 	}
-
-	return numberOfShips;
+	else if (numberOfPlayers < 2)
+	{
+		printf("That's too few players! \n");
+		return -1;
+	}
+	else
+	{
+		return numberOfPlayers;
+	}
 }
 
 //Player chooses the x and y axes of the field, setting the size of the field
@@ -127,23 +133,51 @@ Field ChooseFieldSize()
 {
 	char* xAxis;
 	char* yAxis;
-	Field fieldAxesAndSize;
+	Field fieldInfo;
 
 	//Player chooses the sizes of the x axis
-	printf("Choose the size of your x axis. ");
+	printf("Choose the size of your x axis. (between 2 and 10) ");
 	xAxis = (char*)malloc(3);
 	gets_s(xAxis, 3);
-	fieldAxesAndSize.xAxisInt = atoi(xAxis);
+	fieldInfo.xAxisInt = atoi(xAxis);
+
+	if (fieldInfo.xAxisInt > 10) //Loops function if user's x axis is > 10
+	{
+		printf("Your x axis is too big! \n");
+		fieldInfo.returnError = -1;
+		return fieldInfo;
+	}
+
+	if (fieldInfo.xAxisInt < 2) //Loops function if user's x axis is < 2
+	{
+		printf("Your x axis is too small! \n");
+		fieldInfo.returnError = -1;
+		return fieldInfo;
+	}
 
 	//Player chooses the size of the y axis
-	printf("Choose the size of your y axis. ");
+	printf("Choose the size of your y axis. (between 2 and 10) ");
 	yAxis = (char*)malloc(3);
 	gets_s(yAxis, 3);
-	fieldAxesAndSize.yAxisInt = atoi(yAxis);
+	fieldInfo.yAxisInt = atoi(yAxis);
 
-	fieldAxesAndSize.fieldSize = (fieldAxesAndSize.xAxisInt * fieldAxesAndSize.yAxisInt); //Size of the field
+	if (fieldInfo.yAxisInt > 10) //Loops function if user's y axis is > 10
+	{
+		printf("Your y axis is too big! \n");
+		fieldInfo.returnError = -1;
+		return fieldInfo;
+	}
 
-	return fieldAxesAndSize;
+	if (fieldInfo.yAxisInt < 2) //Loops function if user's y axis is < 2
+	{
+		printf("Your y axis is too small! \n");
+		fieldInfo.returnError = -1;
+		return fieldInfo;
+	}
+
+	fieldInfo.fieldSize = (fieldInfo.xAxisInt * fieldInfo.yAxisInt); //Size of the field
+
+	return fieldInfo;
 }
 
 //Calls BuildField function, returning double pointer that is a pointer to an array of pointers for each player's field
@@ -162,6 +196,26 @@ char** CallBuildField(int numberOfPlayers, Field fieldInfo)
 	}
 
 	return fieldOfPlayerPointer;
+}
+
+//Player chooses how many ships can be placed on each player's field
+int ChooseNumberOfShips(Field fieldInfo)
+{
+	int numberOfShips;
+	char* numShipsStr;
+
+	printf("How many ships do you want? ");
+	numShipsStr = (char*)malloc(10);
+	gets_s(numShipsStr, 10);
+	numberOfShips = atoi(numShipsStr);
+
+	if (numberOfShips >= fieldInfo.fieldSize) //Occurs if player wants to place too many ships. Re-starts the game.
+	{
+		printf("You can't place that many ships! ");
+		return -1;
+	}
+
+	return numberOfShips;
 }
 
 //Builds a field of all o's for each player of specified field size
@@ -184,7 +238,6 @@ char* BuildField(Field fieldInfo)
 
 	return field;
 }
-
 
 //Calls PlaceShips function for each player
 void CallPlaceShips(int numberOfPlayers, int playerNumber, int numberOfShips, char** playerFields, Field fieldInfo)
@@ -260,8 +313,6 @@ void PlaceShips(int numShips, int playerNumber, char** playerFields, Field field
 		playerFields[PLAYER_NUMBER_TO_INDEX(playerNumber)][POSITION_NUMBER_TO_INDEX(pos)] = 's'; //Places s wherever player specified coordinates
 		shipNumber = shipNumber + 1;
 	}
-
-	return;
 }
 
 //Create a field of all x's of specified field size, representing a field of a player who lost
@@ -286,16 +337,35 @@ char* CreateOutField(Field fieldInfo)
 }
 
 //Asks attacking player who they want to attack
-int PrepareForAttack(int playerNumber, int numberOfPlayers)
+int PrepareForAttack(int playerNumber, int numberOfPlayers, char** playerFields, char* playerOutField)
 {
 	char* defPlayerNumberChar;
 	int defPlayerNumber;
 	
-		printf("Player %d, who do you want to attack? ", playerNumber);
-		defPlayerNumberChar = (char*)malloc(MAX_PLAYER_DIGITS);
-		gets_s(defPlayerNumberChar, MAX_PLAYER_DIGITS);
-		defPlayerNumber = atoi(defPlayerNumberChar);
+	printf("Player %d, who do you want to attack? ", playerNumber);
+	defPlayerNumberChar = (char*)malloc(MAX_PLAYER_DIGITS);
+	gets_s(defPlayerNumberChar, MAX_PLAYER_DIGITS);
+	defPlayerNumber = atoi(defPlayerNumberChar);
 
+	//Loops function if player enters player number of player who already lost
+	if (strcmp(playerFields[PLAYER_NUMBER_TO_INDEX(defPlayerNumber)], playerOutField) == 0)
+	{
+		printf("That player is already out of the game!\n");
+		return -1;
+	}
+
+	if (defPlayerNumber == playerNumber)
+	{
+		printf("Hmm...you don't really want to attack yourself, do you?\n");
+		return -1;
+	}
+
+	//Returns message if player enters a player number <1 or > the number of players
+	if (defPlayerNumber < 1 || defPlayerNumber > numberOfPlayers) 
+	{
+		printf("There's no player with that number!\n");
+		return -1;
+	}
 	return defPlayerNumber;
 }
 
@@ -389,7 +459,14 @@ int ResultsOfMatch(int attackResults, int playerNumber, int defPlayerNumber, int
 	}
 	else //Prints how many ships a player has sunk in the current turn.
 	{
-		printf("Player %d sunk %d ship! \n", playerNumber, attackResults);
+		if (attackResults == 1)
+		{
+			printf("Player %d sunk %d ship! \n", playerNumber, attackResults);
+		}
+		else
+		{
+			printf("Player %d sunk %d ships! \n", playerNumber, attackResults);
+		}
 		return 100;
 	}
 }

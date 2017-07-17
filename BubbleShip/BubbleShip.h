@@ -6,8 +6,8 @@
 #define POSITION_NUMBER_TO_INDEX(num) (num-1) //Subtracts 1 from pos int, in order to start at 0th index
 
 
-/*LoopMain
-Loops main function when players enter incorrect coordinates
+/*loopmain
+loops main function when players enter incorrect coordinates
 */
 int LoopMain();
 
@@ -16,12 +16,6 @@ Allows player to choose how many players will participate in the game.
 
 returns the number of players*/
 int ChooseNumberOfPlayers();
-
-/*ChooseNumberOfShips
-Allows player to choose how many ships per person.
-
-returns the number of ships*/
-int ChooseNumberOfShips();
 
 /*ChooseFieldSize
 Allows player to choose the x and y coordinates of the field. Determines the size of the field.*/
@@ -36,6 +30,12 @@ fieldInfo: structure including x axis, y axis, and size of field
 
 returns nothing*/
 char** CallBuildField(int numberOfPlayers, Field fieldInfo);
+
+/*ChooseNumberOfShips
+Allows player to choose how many ships per person.
+
+returns the number of ships*/
+int ChooseNumberOfShips(Field fieldInfo);
 
 
 /*BuildField
@@ -126,7 +126,7 @@ playerNumber: the id number of the attacking player
 numberOfPlayers: number of players in the game
 
 returns player number of defender*/
-int PrepareForAttack(int playerNumber, int numberOfPlayers);
+int PrepareForAttack(int playerNumber, int numberOfPlayers, char** playerFields, char* playerOutField);
 
 /*CallLaunchAttackAgainstPlayer
 Calls the function LaunchAttackAgainstPlayer.
